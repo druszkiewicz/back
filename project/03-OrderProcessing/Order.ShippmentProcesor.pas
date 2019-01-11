@@ -3,67 +3,49 @@ unit Order.ShippmentProcesor;
 interface
 
 uses
+  System.Classes,
+  Data.DB,
   Shippment,
   DataProxy.Order,
-  DataProxy.Order.Details,
   Order.Validator;
 
-const
-  c_MinQuantity = 50;
-
 type
-  TShipmentProcessor = class
+  TShipmentProcessor = class(TComponent)
   private
-    FShippment: TShippment;
-    FOrder: TOrderDAO;
-    fOrderDetails : TOrderDetailsDAO;
-    FOrderValidator: TOrderValidator;
   public
-    constructor Create(aShippment: TShippment);
-    destructor Destroy; override;
-    procedure ShipCurrentOrder;
-
+    procedure ShipOrder (Shippment: TShippment);
   end;
 
 implementation
 
-uses Data.DataProxy, System.Sysutils;
+uses DataProxy.OrderDetails, Data.DataProxy, DataProxy.Factory;
 
-constructor TShipmentProcessor.Create(aShippment: TShippment);
+procedure TShipmentProcessor.ShipOrder (Shippment: TShippment);
+var
+  isValid: Boolean;
+  OrderDetails: TOrderDetailsProxy;
+  Order: TOrderProxy;
+  OrderValidator: TOrderValidator;
+  TotalQuantity: Integer;
 begin
-  FShippment := aShippment;
-  FOrder := TOrderDao.Create(nil);
-  fOrderDetails := TOrderDetailsDAO.Create(nil);
-  FOrderValidator := TOrderValidator.Create;
-end;
-
-destructor TShipmentProcessor.Destroy;
-begin
-  FOrder.Free;
-  fOrderDetails.Free;
-  FOrderValidator.Free;
-  inherited;
-end;
-
-procedure TShipmentProcessor.ShipCurrentOrder;
-begin
-  FOrder.Open(FShippment.OrderID);
-
-  fOrderDetails.Open(FShippment.OrderID,c_MinQuantity);
-
-  fOrderDetails.ForEach( procedure (proxy : TGenericDataSetProxy)
-                         begin
-                          {$IFDEF CONSOLEAPP}
-                            var orderid := TOrderDetailsDAO(proxy).ORDERID.AsString;
-                            var prodid  := TOrderDetailsDAO(proxy).PRODUCTID.AsString;
-                            var quant   := TOrderDetailsDAO(proxy).QUANTITY.AsInteger;
-                            WriteLn(Format('OrderID: %s productid: %s Quantity: %d', [orderid, prodid, quant]));
-                          {$ENDIF}
-                         end);
-
-  FOrderValidator.isValid(FOrder);
-  // if isValid then
-  // FOrder.Post;
+  OrderValidator := TOrderValidator.Create;
+  try
+    Order := DataProxyFactory.GetDataProxy_Order1(Shippment.OrderID);
+    Order.Open;
+    OrderDetails := DataProxyFactory.GetDataProxy_OrderDetails(Shippment.OrderID);
+    OrderDetails.Open;
+    TotalQuantity := OrderDetails.GetTotalQuantity;
+    WriteLn ( ' TotalQuantity: ', TotalQuantity);
+    Order.Edit;
+    Order.ShippedDate.Value := Shippment.ShipmentDate;
+    Order.ShipVia.Value := Shippment.ShipperID;
+    isValid := OrderValidator.isValid(Order);
+    if isValid then
+      Order.Post;
+    Order.Free;
+  finally
+    OrderValidator.Free;
+  end;
 {$IFDEF CONSOLEAPP}
   WriteLn('Order has been processed....');
 {$ENDIF}
