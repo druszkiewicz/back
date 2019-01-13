@@ -4,7 +4,6 @@ uses
   Vcl.Forms,
   Form.Main in 'Form.Main.pas' {Form1},
   Frame.Welcome in 'Frame.Welcome.pas' {FrameWelcome: TFrame},
-  Fake.FDConnection in 'Fake.FDConnection.pas',
   Consts.Application in 'Consts.Application.pas',
   Utils.CipherAES128 in 'Utils.CipherAES128.pas',
   Frame.Import in 'Frame.Import.pas' {FrameImport: TFrame},
@@ -20,14 +19,15 @@ uses
   ClientAPI.Books in 'api\ClientAPI.Books.pas',
   ClientAPI.Readers in 'api\ClientAPI.Readers.pas',
   ExtGUI.ListBox.Books in 'ExtGUI.ListBox.Books.pas',
-  DataAccess.Readers.FireDAC in 'experimental\DataAccess.Readers.FireDAC.pas',
-  DataAccess.Readers in 'experimental\DataAccess.Readers.pas',
-  Scripts.Readers in 'experimental\Scripts.Readers.pas',
   Helper.TDataSet in 'Helper.TDataSet.pas',
   Helper.TWinControl in 'Helper.TWinControl.pas',
   Helper.TJsonObject in 'Helper.TJsonObject.pas',
   Helper.TDBGrid in 'Helper.TDBGrid.pas',
-  Helper.TApplication in 'Helper.TApplication.pas';
+  Helper.TApplication in 'Helper.TApplication.pas',
+  Messaging.EventBus in 'Messaging.EventBus.pas',
+  MVC.Work in 'MVC.Work.pas',
+  Work.ImportReaderReports in 'Work.ImportReaderReports.pas',
+  Model.Books in 'Model.Books.pas';
 
 {$R *.res}
 
